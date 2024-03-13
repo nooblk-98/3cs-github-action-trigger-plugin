@@ -37,8 +37,11 @@ function gat_trigger_action_page() {
     if (isset($_POST['trigger_action'])) {
         $github_token = get_option('gat_github_token');
         $github_repo = get_option('gat_github_repo');
+        $workflow_file = get_option('gat_workflow_file');
+        $branch_name = get_option('gat_branch_name');
+
         $response = wp_remote_post(
-            "https://api.github.com/repos/$github_repo/dispatches",
+            "https://api.github.com/repos/$github_repo/actions/workflows/$workflow_file/dispatches",
             array(
                 'method'    => 'POST',
                 'headers'   => array(
@@ -46,7 +49,9 @@ function gat_trigger_action_page() {
                     'Authorization' => "token $github_token",
                     'Content-Type'  => 'application/json'
                 ),
-                'body'      => json_encode(array('event_type' => 'wordpress-update')),
+                'body'      => json_encode(array(
+                    'ref' => $branch_name,
+                )),
                 'timeout'   => 60
             )
         );
@@ -55,7 +60,13 @@ function gat_trigger_action_page() {
             $error_message = $response->get_error_message();
             echo "<p>Failed to trigger action: $error_message</p>";
         } else {
-            echo '<p>GitHub Action triggered successfully!</p>';
+            $response_code = wp_remote_retrieve_response_code($response);
+            if ($response_code == 204) {
+                echo '<p>OK! GitHub Action triggered successfully.</p>';
+            } else {
+                $body = wp_remote_retrieve_body($response);
+                echo "<p>Failed to trigger action: $body</p>";
+            }
         }
     }
 
@@ -84,9 +95,10 @@ function gat_trigger_action_page() {
           </script>';
 }
 
+
 // Function to display the GitHub workflow status
 function gat_display_workflow_status() {
-    echo '<h2>GitHub Workflow Running Status</h2>';
+    echo '<h2>GitHub Workflow Status</h2>';
 
     $github_token = get_option('gat_github_token');
     $github_repo = get_option('gat_github_repo');
