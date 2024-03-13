@@ -2,8 +2,8 @@
 /**
  * Plugin Name: GitHub Action Trigger
  * Description: A plugin to trigger a GitHub Action from the WordPress dashboard and view the workflow status with automatic updates.
- * Version: 2.0
- * Author: liynage@3cs.solutions
+ * Version: 2.3
+ * Author: lahiru@3cs.solutions
  */
 
 // Include the settings page
